@@ -79,7 +79,7 @@ Ensure Python 3.10+ is installed on Windows:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Atena_Battery.git
+git clone https://github.com/yourusername/Atena-Battery.git
 cd Atena_Battery
 
 # Run directly
@@ -101,24 +101,6 @@ python app.py
 
 ---
 
-## 🛠️ Building the Standalone `.exe`
-
-If you want to package the Python script into a single `.exe` yourself:
-
-```bash
-# Install PyInstaller and Pillow (only needed for compilation)
-pip install -r requirements.txt
-
-# Generate the application icon (optional)
-python make_icon.py
-
-# Build single-file executable
-pyinstaller --noconsole --onefile --clean --name "BluetoothBattery" --icon "app_icon.ico" app.py
-```
-
-The resulting `Atena_Battery.exe` will be located in the `dist/` directory.
-
----
 
 ## 📁 Repository Structure
 
