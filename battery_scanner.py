@@ -1,50 +1,80 @@
 """
-Bluetooth Battery Scanner for Windows.
-Queries Windows PnP and Registry for connected Bluetooth devices and their battery status.
+Bluetooth Battery Scanner for Windows (Enhanced 1% Precision & BLE GATT Support).
+Queries Windows PnP (Classic + BLE + HID) and Registry for connected Bluetooth devices.
 """
 
+import os
 import subprocess
 import logging
 
-# Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 POWERSHELL_SCRIPT = r"""
 $ErrorActionPreference = 'SilentlyContinue'
 $batteryKey = "{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2"
-$devices = Get-PnpDevice -Class "System","Bluetooth" -Status "OK" | Where-Object { $_.InstanceId -like "*BTHENUM*" }
+
+# Scan Bluetooth, System, HIDClass, and Media devices (includes BTHENUM and BTHLE for 1% GATT battery)
+$devices = Get-PnpDevice -Status "OK" | Where-Object {
+    $_.InstanceId -match "^(BTHENUM|BTHLE|BTHLEDEVICE|HID\\\{00001812)" -or
+    ($_.Class -in @("Bluetooth", "System", "HIDClass", "Media", "AudioEndpoint") -and $_.InstanceId -match "BTH")
+}
 
 $found = @{}
 
-# 1. PnP Property for Bluetooth Audio / Hands-Free devices (e.g. QCY, AirPods, Sony, JBL)
-foreach ($dev in $devices) {
-    $prop = Get-PnpDeviceProperty -InstanceId $dev.InstanceId -KeyName $batteryKey
-    if ($prop -and $null -ne $prop.Data -and $prop.Data -ge 0 -and $prop.Data -le 100) {
-        $name = $dev.FriendlyName -replace '(?i)\s+(Hands-Free\s*(AG)?|Avrcp\s*Transport|Bluetooth\s*Device)$', ''
-        if (-not [string]::IsNullOrWhiteSpace($name) -and -not $found.ContainsKey($name)) {
-            $found[$name] = [int]$prop.Data
-            Write-Output "$name|$($prop.Data)"
+function Clean-DeviceName($rawName) {
+    if ([string]::IsNullOrWhiteSpace($rawName)) { return "" }
+    $n = $rawName -replace '(?i)\s*(Hands-Free(\s*AG(\s*Audio)?)?|Avrcp\s*Transport|Bluetooth\s*(LE\s*)?Device|Stereo|Audio|Headphones|Headset|GATT|Service|\(BLE\))\s*$', ''
+    $n = $n -replace '(?i)^Bluetooth\s+LE\s+GATT\s+compliant\s+', ''
+    return $n.Trim()
+}
+
+function Add-BatteryResult($rawName, $val) {
+    $name = Clean-DeviceName $rawName
+    if ([string]::IsNullOrWhiteSpace($name)) { return }
+    $level = [int]$val
+    if ($level -lt 0 -or $level -gt 100) { return }
+
+    if (-not $found.ContainsKey($name)) {
+        $found[$name] = $level
+    } else {
+        # Prefer 1%-granularity readings (non-multiples of 10) over coarse 10% HFP readings
+        $existing = $found[$name]
+        if (($existing % 10 -eq 0) -and ($level % 10 -ne 0)) {
+            $found[$name] = $level
         }
     }
 }
 
-# 2. Registry Fallback for HID Peripherals (Mice, Keyboards, Controllers)
-$regPaths = @("HKLM:\SYSTEM\CurrentControlSet\Enum\BTHENUM")
+# 1. Check DEVPKEY_Device_BatteryPercentage across all matched PnP nodes (Classic + BLE)
+foreach ($dev in $devices) {
+    $prop = Get-PnpDeviceProperty -InstanceId $dev.InstanceId -KeyName $batteryKey
+    if ($prop -and $null -ne $prop.Data) {
+        Add-BatteryResult $dev.FriendlyName $prop.Data
+    }
+}
+
+# 2. Registry Fallback for BLE GATT & HID Peripherals
+$regPaths = @(
+    "HKLM:\SYSTEM\CurrentControlSet\Enum\BTHLE",
+    "HKLM:\SYSTEM\CurrentControlSet\Enum\BTHLEDevice",
+    "HKLM:\SYSTEM\CurrentControlSet\Enum\BTHENUM"
+)
 foreach ($rp in $regPaths) {
     if (Test-Path $rp) {
         Get-ChildItem $rp | ForEach-Object {
             Get-ChildItem $_.PSPath | ForEach-Object {
                 $p = Get-ItemProperty $_.PSPath
-                if ($p -and $null -ne $p.BatteryLevel -and $p.BatteryLevel -ge 0 -and $p.BatteryLevel -le 100) {
+                if ($p -and $null -ne $p.BatteryLevel) {
                     $devName = if ($p.FriendlyName) { $p.FriendlyName } else { $_.PSChildName }
-                    if (-not $found.ContainsKey($devName)) {
-                        $found[$devName] = [int]$p.BatteryLevel
-                        Write-Output "$devName|$($p.BatteryLevel)"
-                    }
+                    Add-BatteryResult $devName $p.BatteryLevel
                 }
             }
         }
     }
+}
+
+foreach ($k in $found.Keys) {
+    Write-Output "$k|$($found[$k])"
 }
 """
 
@@ -52,28 +82,34 @@ foreach ($rp in $regPaths) {
 def scan_devices():
     """
     Executes PowerShell script in background (no console window)
-    and returns a list of dictionaries: [{'name': '...', 'battery': 70}, ...]
+    and returns a list of dictionaries: [{'name': '...', 'battery': 73}, ...]
     """
     try:
-        # Hide command prompt window on Windows
         startupinfo = None
         creationflags = 0
-        import os
-        if os.name == 'nt':
+        if os.name == "nt":
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = subprocess.SW_HIDE
             creationflags = subprocess.CREATE_NO_WINDOW
 
         proc = subprocess.run(
-            ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", POWERSHELL_SCRIPT],
+            [
+                "powershell",
+                "-NoProfile",
+                "-NonInteractive",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                POWERSHELL_SCRIPT,
+            ],
             capture_output=True,
             text=True,
             encoding="utf-8",
             errors="replace",
             startupinfo=startupinfo,
             creationflags=creationflags,
-            timeout=15
+            timeout=15,
         )
 
         results = []
