@@ -1,0 +1,38 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Local Cargo configuration
+.cargo/
+
+# AI Agent, Scratch, and Analysis artifacts
+.agent/
+.cursor/
+.claude/
+*graphify*
+graphify-out/
+docs/handoffs/
+
+# IDE and Editor configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS and runtime clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
+
+# Python legacy caches (safety measure for oldcode)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+dist/
+build/

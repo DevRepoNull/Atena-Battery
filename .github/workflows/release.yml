@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-release:
+    name: Build & Package (${{ matrix.target }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            archive_name: atena-battery-windows-x64
+          - target: aarch64-pc-windows-msvc
+            archive_name: atena-battery-windows-arm64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          components: clippy, rustfmt
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify code formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy lints
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Run test suite
+        run: cargo test --workspace --verbose
+        if: matrix.target == 'x86_64-pc-windows-msvc'
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package Release Archive
+        shell: pwsh
+        run: |
+          $binName = "atena-app.exe"
+          $targetBin = "target/${{ matrix.target }}/release/$binName"
+          $outDir = "dist/${{ matrix.archive_name }}"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+          
+          # Copy binary renamed to atena-battery.exe for clean end-user presentation
+          Copy-Item $targetBin -Destination "$outDir/atena-battery.exe"
+          
+          if (Test-Path "README.md") { Copy-Item "README.md" -Destination $outDir }
+          if (Test-Path "LICENSE") { Copy-Item "LICENSE" -Destination $outDir }
+          
+          $zipFile = "${{ matrix.archive_name }}.zip"
+          Compress-Archive -Path "$outDir/*" -DestinationPath $zipFile -Force
+          
+          $hash = (Get-FileHash -Path $zipFile -Algorithm SHA256).Hash
+          Set-Content -Path "$zipFile.sha256" -Value "$hash  $zipFile"
+          
+          Write-Host "Archive created: $zipFile (SHA256: $hash)"
+
+      - name: Upload Release Artifacts
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            *.zip
+            *.sha256
+          draft: false
+          prerelease: false
+          generate_release_notes: true

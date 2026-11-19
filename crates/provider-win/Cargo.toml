@@ -1,0 +1,31 @@
+[package]
+name = "atena-provider-win"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+atena-core = { path = "../core" }
+async-trait = "0.1"
+tokio = { version = "1", features = ["sync", "rt"] }
+windows = { version = "0.58", features = [
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Devices_Properties",
+    "Win32_Foundation",
+    "Win32_Devices_Bluetooth",
+    "Win32_Devices_HumanInterfaceDevice",
+    "Win32_UI_Input_XboxController",
+    "Win32_Storage_FileSystem",
+    "Win32_Security",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_LibraryLoader",
+    "Win32_Graphics_Gdi",
+    "Devices_Bluetooth",
+    "Devices_Bluetooth_GenericAttributeProfile",
+    "Storage_Streams",
+    "Foundation_Collections",
+] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["sync", "rt", "macros", "time"] }

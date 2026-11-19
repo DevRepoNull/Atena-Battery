@@ -1,0 +1,24 @@
+[package]
+name = "atena-app"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+atena-core = { path = "../core" }
+atena-provider-win = { path = "../provider-win" }
+tokio = { version = "1", features = ["rt", "signal", "macros", "time", "sync"] }
+tray-icon = "0.26"
+muda = "0.21"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+tracing-appender = "0.2"
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+    "UI_Notifications",
+    "Data_Xml_Dom",
+] }

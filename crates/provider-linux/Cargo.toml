@@ -1,0 +1,11 @@
+[package]
+name = "atena-provider-linux"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = "0.1"
+atena-core = { path = "../core" }
+tokio = { version = "1", features = ["sync"] }
