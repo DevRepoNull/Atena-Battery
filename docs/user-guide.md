@@ -8,7 +8,7 @@ This guide provides end-to-end instructions for installing, configuring, operati
 
 Atena Battery is distributed as a single standalone executable requiring **no installer**, no administrator privileges, and no background runtimes:
 
-1. **Download:** Obtain `atena-battery-windows-x64.zip` from the latest [GitHub Releases](https://github.com/AtenaBattery/Atena-Battery/releases).
+1. **Download:** Obtain `atena-battery-windows-x64.zip` from the latest [GitHub Releases](https://github.com/DevRepoNull/Atena-Battery/releases).
 2. **Extract & Run:** Extract `atena-battery.exe` to a folder of your choice (e.g. `C:\Users\<User>\bin\` or your portable tools folder) and double-click to launch.
 3. **Tray Interaction:** The application starts silently with zero console window flashing and places a dynamic battery gauge icon in your Windows Notification Area (System Tray), located next to the clock in the bottom-right corner of your taskbar.
 

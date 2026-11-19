@@ -176,7 +176,7 @@ Atena Battery runs on a single-threaded Tokio runtime (`new_current_thread`) to 
 ### Build and Verification Workflow
 ```powershell
 # 1. Clone repository
-git clone https://github.com/AtenaBattery/Atena-Battery.git
+git clone -b Rewriting-Rust https://github.com/DevRepoNull/Atena-Battery.git
 cd Atena-Battery
 
 # 2. Check compilation across the workspace

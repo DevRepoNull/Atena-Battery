@@ -2,11 +2,11 @@
 
 > An ultra-lightweight, event-driven Universal Wireless Battery Monitor for Windows, engineered in Rust.
 
-[![CI/CD Release](https://github.com/AtenaBattery/Atena-Battery/actions/workflows/release.yml/badge.svg)](https://github.com/AtenaBattery/Atena-Battery/actions/workflows/release.yml)
+[![CI](https://github.com/DevRepoNull/Atena-Battery/actions/workflows/ci.yml/badge.svg?branch=Rewriting-Rust)](https://github.com/DevRepoNull/Atena-Battery/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D6.svg?logo=windows)](https://microsoft.com/windows)
 [![Rust](https://img.shields.io/badge/Engineered%20in-Rust%202021-DEA584.svg?logo=rust)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Release Size](https://img.shields.io/badge/Binary%20Size-1.09%20MB-brightgreen.svg)](https://github.com/AtenaBattery/Atena-Battery/releases)
+[![Release Size](https://img.shields.io/badge/Binary%20Size-1.09%20MB-brightgreen.svg)](https://github.com/DevRepoNull/Atena-Battery/releases)
 
 ---
 
@@ -48,7 +48,7 @@ Atena Battery correlates and monitors battery levels across 4 primary wireless c
 
 ## 3-Step Quick Start
 
-1. **Download:** Grab the latest `atena-battery-windows-x64.zip` from [GitHub Releases](https://github.com/AtenaBattery/Atena-Battery/releases).
+1. **Download:** Grab the latest `atena-battery-windows-x64.zip` from [GitHub Releases](https://github.com/DevRepoNull/Atena-Battery/releases).
 2. **Run:** Extract and double-click `atena-battery.exe`. It launches silently in the background with zero terminal flashing and places a dynamic battery gauge icon in your System Tray next to the clock.
 3. **Control:** **Right-click** or click the tray icon to view all connected devices, refresh levels on demand, switch low-battery warning thresholds (10%, 20%, 30%), or toggle "Start with Windows".
 
@@ -135,7 +135,7 @@ Atena Battery queries battery levels through a prioritized multi-engine discover
 ### Build Commands
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/AtenaBattery/Atena-Battery.git
+git clone -b Rewriting-Rust https://github.com/DevRepoNull/Atena-Battery.git
 cd Atena-Battery
 
 # 2. Run the unit and integration test suite (73 tests)
