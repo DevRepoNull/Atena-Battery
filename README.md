@@ -25,6 +25,13 @@ Whether you use Bluetooth earbuds (AirPods, QCY, Sony, Galaxy Buds), wireless he
 
 ---
 
+<div align="center">
+  <img src="https://github.com/White-Wolf-dv/White-Wolf-dv/blob/main/Gif/55.gif" alt="GafelSound Preview" width="550" />
+</div>
+
+
+---
+
 ## ✨ Features
 
 - **🎯 Accurate Windows Battery Retrieval**:
